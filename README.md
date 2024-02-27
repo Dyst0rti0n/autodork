@@ -1,6 +1,8 @@
 # Autodork
 A GUI for crafting specific Google Dorking queries that will be automatically searched for in your browser and save the results found. Aswell as evaluting the usefulness of the discovered domain or filetype.
 
+Only select 1 filetype, 1 site domain as of now. I'm working on fixing it up but this is the main premise of the script.
+
 ## Browser
 Change the filepath to your browser of choice, I've defaulted it to Firefox at the moment. Which can be found at 
 ```
