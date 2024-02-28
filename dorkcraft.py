@@ -115,7 +115,6 @@ servers_var = tk.BooleanVar()
 servers_checkbox = tk.Checkbutton(servers_frame, text="Servers", variable=servers_var)
 servers_checkbox.pack(pady=5)
 
-
 # Filetypes tab
 filetypes_frame = tk.Frame(notebook)
 filetypes_frame.pack(fill="both", expand=True)
@@ -289,33 +288,34 @@ advanced_categories = [
 ]
 
 def toggle_options(event, category, frame):
+    # Clear previously displayed options
+    for widget in frame.winfo_children():
+        widget.destroy()
+    # Display options for the clicked heading
     for cat, options in advanced_categories:
         if cat == category:
-            if frame.winfo_children():
-                for widget in frame.winfo_children():
-                    widget.destroy()
-            else:
-                for option in options:
-                    var = tk.BooleanVar(value=False)
-                    checkbox = tk.Checkbutton(frame, text=option, variable=var, anchor="w")
-                    checkbox.pack(anchor="w")
-                    advanced_vars.append((var, option))
+            for option in options:
+                var = tk.BooleanVar(value=False)
+                checkbox = tk.Checkbutton(frame, text=option, variable=var, anchor="w")
+                checkbox.pack(anchor="w")
+                advanced_vars.append((var, option))
             break
 
 def create_category_labels():
     for category, _ in advanced_categories:
-        category_label = ttk.Label(advanced_frame, text=category, font=("Helvetica", 14, "bold"), cursor="hand2", anchor="w")
+        category_label = tk.Button(advanced_inner_frame, text=category, font=("Helvetica", 14, "bold"), cursor="hand2", anchor="w", command=lambda cat=category, frame=advanced_inner_frame: toggle_options(None, cat, frame))
         category_label.pack(pady=5, anchor="w")
-        category_label.bind("<Button-1>", lambda e, category=category, frame=advanced_inner_frame: toggle_options(e, category, frame))
+
+def back_to_categories():
+    for widget in advanced_inner_frame.winfo_children():
+        widget.destroy()
+    create_category_labels()
+
+# Back button for the Advanced Dorking tab
+back_button = tk.Button(advanced_frame, text="Back to Categories", command=back_to_categories, font=("Helvetica", 12))
+back_button.pack(pady=10)
 
 create_category_labels()
-
-# Configure scrollbar to update based on the actual size of the inner frame
-def update_scrollregion(event):
-    advanced_canvas.configure(scrollregion=advanced_canvas.bbox("all"))
-
-advanced_canvas.bind("<Configure>", update_scrollregion)
-advanced_scroll.config(command=advanced_canvas.yview)
 
 # Add tabs to the notebook
 notebook.add(servers_frame, text="Servers")
@@ -325,11 +325,11 @@ notebook.add(advanced_frame, text="Advanced Dorking")
 notebook.pack(fill="both", expand=True)
 
 # Run search button
-search_button = tk.Button(app, text="Run Search", command=run_search)
-search_button.pack(pady=10)
+search_button = tk.Button(app, text="Run Search", command=run_search, font=("Helvetica", 16, "bold"))
+search_button.pack(pady=10, side="left", padx=10)
 
 # Update button
-update_button = tk.Button(app, text="Update", command=update_application)
-update_button.pack(pady=10)
+update_button = tk.Button(app, text="Update", command=update_application, font=("Helvetica", 16, "bold"))
+update_button.pack(pady=10, side="left", padx=10)
 
 app.mainloop()
