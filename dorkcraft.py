@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox 
+from tkinter import ttk, messagebox
 import webbrowser
 import random
 import requests
@@ -161,7 +161,7 @@ filetype_radio_buttons.append(filetypes_var)
 
 # Create Radiobuttons for different filetypes
 for category, types in file_types.items():
-    category_label = tk.Label(filetypes_inner_frame, text=category, font=("Helvetica", 12, "bold"))
+    category_label = tk.Label(filetypes_inner_frame, text=category, font=("Helvetica", 12, "bold"), anchor="w")
     category_label.pack(anchor="w")
     for file_type in types:
         var = tk.StringVar(value=file_type)  # Initially set value
@@ -196,7 +196,7 @@ domain_checkboxes = []
 for category, domains in domain_categories.items():
     category_frame = tk.Frame(site_domains_frame)
     category_frame.pack(side="left", padx=10, pady=5, fill="y")
-    category_label = tk.Label(category_frame, text=category, font=("Helvetica", 12, "bold"))
+    category_label = tk.Label(category_frame, text=category, font=("Helvetica", 12, "bold"), anchor="w")
     category_label.pack(anchor="w")
     for domain in domains:
         var = tk.BooleanVar(value=False)  # Initially unticked
@@ -208,16 +208,44 @@ for category, domains in domain_categories.items():
 # Advanced Dorking tab
 advanced_frame = ttk.Frame(notebook)
 advanced_frame.pack(fill="both", expand=True)
-advanced_scroll = ttk.Scrollbar(advanced_frame, orient="vertical")
-advanced_scroll.pack(side="right", fill="y")
-advanced_canvas = tk.Canvas(advanced_frame, yscrollcommand=advanced_scroll.set)
+
+advanced_canvas = tk.Canvas(advanced_frame)
 advanced_canvas.pack(side="left", fill="both", expand=True)
+
 advanced_inner_frame = ttk.Frame(advanced_canvas)
 advanced_canvas.create_window((0, 0), window=advanced_inner_frame, anchor="nw")
+
+advanced_scroll = ttk.Scrollbar(advanced_frame, orient="vertical", command=advanced_canvas.yview)
+advanced_scroll.pack(side="right", fill="y")
+advanced_canvas.configure(yscrollcommand=advanced_scroll.set)
 
 advanced_vars = []
 
 advanced_categories = [
+    ("Security Related", [
+        "filetype:pdf password",
+        "intitle:index.of password.txt",
+        "intext:”username” filetype:xls",
+        "intext:”email” filetype:pdf",
+        "inurl:admin login",
+        "intitle:”Login page” “Username” “Password”",
+        "inurl:login intext:”password”",
+        "inurl:.php?id=",
+        "intitle:”SQL query failed” intext:”mysql”",
+        "site:.edu filetype:pdf",
+        "intext:”Private Key” filetype:pem",
+        "intitle:”Index of /” +passwd",
+        "intitle:”Index of /” +secret",
+        "intext:”Confidential” filetype:ppt",
+        "intext:”Database Error” intitle:”Warning”",
+        "intext:”PHP Script” “Debug”",
+        "intext:”to=python” filetype:py",
+        "intext:”API Key” filetype:yml",
+        "intext:”API Key” filetype:env",
+        "intext:”Private Key” filetype:key",
+        "intext:”System Information” filetype:log",
+        "intitle:”Index of /” +backup"
+    ]),
     ("Webcams", [
         'allintitle:"Network Camera NetworkCamera"',
         'intitle:"EvoCam" inurl:"webcam.html"',
@@ -260,20 +288,33 @@ advanced_categories = [
     ])
 ]
 
-for category, options in advanced_categories:
-    category_label = ttk.Label(advanced_inner_frame, text=category, font=("Helvetica", 14, "bold"))
-    category_label.pack(pady=5)
-    for option in options:
-        var = tk.BooleanVar(value=False)
-        checkbox = tk.Checkbutton(advanced_inner_frame, text=option, variable=var)
-        checkbox.pack(anchor="w")
-        advanced_vars.append((var, option))
+def toggle_options(event, category, frame):
+    for cat, options in advanced_categories:
+        if cat == category:
+            if frame.winfo_children():
+                for widget in frame.winfo_children():
+                    widget.destroy()
+            else:
+                for option in options:
+                    var = tk.BooleanVar(value=False)
+                    checkbox = tk.Checkbutton(frame, text=option, variable=var, anchor="w")
+                    checkbox.pack(anchor="w")
+                    advanced_vars.append((var, option))
+            break
+
+def create_category_labels():
+    for category, _ in advanced_categories:
+        category_label = ttk.Label(advanced_frame, text=category, font=("Helvetica", 14, "bold"), cursor="hand2", anchor="w")
+        category_label.pack(pady=5, anchor="w")
+        category_label.bind("<Button-1>", lambda e, category=category, frame=advanced_inner_frame: toggle_options(e, category, frame))
+
+create_category_labels()
 
 # Configure scrollbar to update based on the actual size of the inner frame
 def update_scrollregion(event):
     advanced_canvas.configure(scrollregion=advanced_canvas.bbox("all"))
 
-advanced_inner_frame.bind("<Configure>", update_scrollregion)
+advanced_canvas.bind("<Configure>", update_scrollregion)
 advanced_scroll.config(command=advanced_canvas.yview)
 
 # Add tabs to the notebook
