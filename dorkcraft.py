@@ -1,7 +1,11 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox 
 import webbrowser
 import random
+import requests
+import os
+
+filetype_radio_buttons = []  # List to hold the Radiobutton variables for filetypes
 
 def generate_random_dork(parameters):
     dork_query = ''
@@ -9,9 +13,9 @@ def generate_random_dork(parameters):
     if selected_site_domains:
         dork_query += 'site:' + '+'.join(selected_site_domains) + ' '
 
-    selected_filetypes = [file_type.cget("text") for file_type, var in zip(filetype_checkboxes, file_vars) if var.get()]
-    if selected_filetypes:
-        dork_query += 'filetype:' + random.choice(selected_filetypes) + ' '
+    selected_filetype = get_selected_filetype()
+    if selected_filetype:
+        dork_query += 'filetype:' + selected_filetype + ' '
 
     for parameter in parameters:
         if parameter.startswith('intext:') or parameter.startswith('intitle:'):
@@ -20,6 +24,12 @@ def generate_random_dork(parameters):
                 dork_query += random.choice(selected_options) + ' '
 
     return dork_query.strip()
+
+def get_selected_filetype():
+    for var in filetype_radio_buttons:
+        if var.get():
+            return var.get()
+    return None
 
 # Function to perform a Google search with the generated dork query
 def search_google_with_dork(query):
@@ -37,10 +47,10 @@ def run_search():
     selected_parameters = []
     if servers_var.get():
         selected_parameters.append('site:')
-    selected_filetypes = [file_type.cget("text") for file_type, var in zip(filetype_checkboxes, file_vars) if var.get()]
-    if selected_filetypes:
+    selected_filetype = get_selected_filetype()
+    if selected_filetype:
         selected_parameters.append('filetype:')
-        selected_parameters.append(random.choice(selected_filetypes))
+        selected_parameters.append(selected_filetype)
     selected_domains = [domain.cget("text") for domain, var in zip(domain_checkboxes, domain_vars) if var.get()]
     if selected_domains:
         selected_parameters.extend(['site:' + domain for domain in selected_domains])
@@ -52,6 +62,39 @@ def run_search():
     search_google_with_dork(random_dork)
     print("Google Dork Query:", random_dork)
 
+# Function to update the application
+def update_application():
+    try:
+        # Fetch latest release information from GitHub API
+        api_url = 'https://api.github.com/repos/Dys0rti0n/autodork/releases/latest'
+        response = requests.get(api_url)
+        release_info = response.json()
+
+        # Check if 'assets' key exists in the release info
+        if 'assets' in release_info and release_info['assets']:
+            # Extract download URL for the script file
+            download_url = release_info['assets'][0]['browser_download_url']
+
+            # Download the latest script file
+            script_response = requests.get(download_url)
+            with open('updated_script.py', 'wb') as file:
+                file.write(script_response.content)
+
+            # Replace existing script file with the updated one
+            os.replace('updated_script.py', 'your_script.py')
+
+            # Optional: Restart the application
+            # app.quit()
+            # os.execv(sys.executable, ['python'] + sys.argv)
+            # or provide a message to restart manually
+            
+            messagebox.showinfo("Update", "Application updated successfully. Please restart the application.")
+        else:
+            messagebox.showinfo("No Assets", "No assets found for the latest release.")
+    except Exception as e:
+        messagebox.showerror("Update Error", f"Failed to update application: {str(e)}")
+
+
 # Create GUI
 app = tk.Tk()
 app.title("Google Dorking Crafter")
@@ -60,7 +103,7 @@ app.title("Google Dorking Crafter")
 screen_width = app.winfo_screenwidth()
 
 # Set window width based on screen resolution
-app.geometry("500x400")
+app.geometry("1000x500")
 
 # Option tabs for different categories
 notebook = ttk.Notebook(app)
@@ -72,14 +115,15 @@ servers_var = tk.BooleanVar()
 servers_checkbox = tk.Checkbutton(servers_frame, text="Servers", variable=servers_var)
 servers_checkbox.pack(pady=5)
 
+
 # Filetypes tab
 filetypes_frame = tk.Frame(notebook)
 filetypes_frame.pack(fill="both", expand=True)
-filetypes_var = tk.BooleanVar()
+filetypes_var = tk.StringVar()  # Variable to hold the selected filetype
+
 filetypes_label = tk.Label(filetypes_frame, text="Filetypes", font=("Helvetica", 14, "bold"))
 filetypes_label.pack(pady=5)
 
-# Create checkboxes for different filetypes
 file_types = {
     "Text Documents": ['txt', 'docx', 'doc', 'pdf', 'rtf', 'odt'],
     "Images": ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tif', 'tiff', 'svg'],
@@ -92,47 +136,44 @@ file_types = {
     "Miscellaneous": ['exe', 'app', 'apk', 'iso', 'torrent', 'xml']
 }
 
-file_vars = []
-filetype_checkboxes = []
+# Create a canvas for the filetypes frame
+filetypes_canvas = tk.Canvas(filetypes_frame)
+filetypes_canvas.pack(side="left", fill="both", expand=True)
 
-# Check if checkboxes can be arranged side by side
-if len(file_types) <= 5:
-    for category, types in file_types.items():
-        category_frame = tk.Frame(filetypes_frame)
-        category_frame.pack(side="left", padx=10, pady=5, fill="y")
-        category_label = tk.Label(category_frame, text=category, font=("Helvetica", 12, "bold"))
-        category_label.pack(anchor="w")
-        for file_type in types:
-            var = tk.BooleanVar(value=False)  # Initially unticked
-            checkbox = tk.Checkbutton(category_frame, text=file_type, variable=var)
-            checkbox.pack(anchor="w")
-            file_vars.append(var)
-            filetype_checkboxes.append(checkbox)
-else:
-    filetypes_canvas = tk.Canvas(filetypes_frame)
-    filetypes_canvas.pack(side="left", fill="both", expand=True)
+# Create a frame to contain the filetypes widgets
+filetypes_inner_frame = tk.Frame(filetypes_canvas)
+filetypes_inner_frame.pack(fill="both", expand=True)
 
-    filetypes_inner_frame = tk.Frame(filetypes_canvas)
-    filetypes_inner_frame.pack(fill="both", expand=True)
+# Add the frame to the canvas
+filetypes_canvas.create_window((0, 0), window=filetypes_inner_frame, anchor="nw")
 
-    filetypes_scroll = ttk.Scrollbar(filetypes_frame, orient="vertical", command=filetypes_canvas.yview)
-    filetypes_scroll.pack(side="right", fill="y")
+# Configure scrollbar for the canvas
+filetypes_scroll = ttk.Scrollbar(filetypes_frame, orient="vertical", command=filetypes_canvas.yview)
+filetypes_scroll.pack(side="right", fill="y")
+filetypes_canvas.configure(yscrollcommand=filetypes_scroll.set)
 
-    filetypes_canvas.configure(yscrollcommand=filetypes_scroll.set)
+# Function to get the selected filetype
+def get_selected_filetype():
+    return filetypes_var.get()
 
-    filetypes_canvas.create_window((0, 0), window=filetypes_inner_frame, anchor="nw")
+# Append the Radiobuttons variable to a list if needed elsewhere
+filetype_radio_buttons.append(filetypes_var)
 
-    filetypes_inner_frame.bind("<Configure>", lambda e: filetypes_canvas.configure(scrollregion=filetypes_canvas.bbox("all")))
+# Create Radiobuttons for different filetypes
+for category, types in file_types.items():
+    category_label = tk.Label(filetypes_inner_frame, text=category, font=("Helvetica", 12, "bold"))
+    category_label.pack(anchor="w")
+    for file_type in types:
+        var = tk.StringVar(value=file_type)  # Initially set value
+        radio_button = tk.Radiobutton(filetypes_inner_frame, text=file_type, variable=filetypes_var, value=file_type)
+        radio_button.pack(anchor="w")
+        filetype_radio_buttons.append(var)
 
-    for category, types in file_types.items():
-        category_label = tk.Label(filetypes_inner_frame, text=category, font=("Helvetica", 12, "bold"))
-        category_label.pack(anchor="w")
-        for file_type in types:
-            var = tk.BooleanVar(value=False)  # Initially unticked
-            checkbox = tk.Checkbutton(filetypes_inner_frame, text=file_type, variable=var)
-            checkbox.pack(anchor="w")
-            file_vars.append(var)
-            filetype_checkboxes.append(checkbox)
+# Update the scroll region when the size of the inner frame changes
+def on_frame_configure(event):
+    filetypes_canvas.configure(scrollregion=filetypes_canvas.bbox("all"))
+
+filetypes_inner_frame.bind("<Configure>", on_frame_configure)
 
 # Site Domains tab
 site_domains_frame = tk.Frame(notebook)
@@ -245,5 +286,9 @@ notebook.pack(fill="both", expand=True)
 # Run search button
 search_button = tk.Button(app, text="Run Search", command=run_search)
 search_button.pack(pady=10)
+
+# Update button
+update_button = tk.Button(app, text="Update", command=update_application)
+update_button.pack(pady=10)
 
 app.mainloop()
