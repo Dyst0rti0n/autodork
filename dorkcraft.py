@@ -45,8 +45,6 @@ def search_google_with_dork(query):
 
 def run_search():
     selected_parameters = []
-    if servers_var.get():
-        selected_parameters.append('site:')
     selected_filetype = get_selected_filetype()
     if selected_filetype:
         selected_parameters.append('filetype:')
@@ -99,6 +97,13 @@ def update_application():
 app = tk.Tk()
 app.title("Google Dorking Crafter")
 
+# Get the directory of the script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Construct the path to the image
+image_path = os.path.join(script_dir, 'dystortion.png')
+# Load the image
+creator_image = tk.PhotoImage(file=image_path)
+
 # Get the screen width
 screen_width = app.winfo_screenwidth()
 
@@ -111,9 +116,14 @@ notebook = ttk.Notebook(app)
 # Servers tab
 servers_frame = tk.Frame(notebook)
 servers_frame.pack(fill="both", expand=True)
-servers_var = tk.BooleanVar()
-servers_checkbox = tk.Checkbutton(servers_frame, text="Servers", variable=servers_var)
-servers_checkbox.pack(pady=5)
+
+# About Me - The Creator section
+creator_info_label = tk.Label(servers_frame, text="About Me - The Creator\nDystortion is a Google Dorking nerd, so this tool was creted to make it much more accessible to anyone.", font=("Helvetica", 12))
+creator_info_label.pack(pady=10)
+
+# Create a label to display the image
+creator_image_label = tk.Label(servers_frame, image=creator_image)
+creator_image_label.pack(pady=10)
 
 # Filetypes tab
 filetypes_frame = tk.Frame(notebook)
@@ -167,12 +177,6 @@ for category, types in file_types.items():
         radio_button = tk.Radiobutton(filetypes_inner_frame, text=file_type, variable=filetypes_var, value=file_type)
         radio_button.pack(anchor="w")
         filetype_radio_buttons.append(var)
-
-# Update the scroll region when the size of the inner frame changes
-def on_frame_configure(event):
-    filetypes_canvas.configure(scrollregion=filetypes_canvas.bbox("all"))
-
-filetypes_inner_frame.bind("<Configure>", on_frame_configure)
 
 # Site Domains tab
 site_domains_frame = tk.Frame(notebook)
@@ -243,7 +247,34 @@ advanced_categories = [
         "intext:”API Key” filetype:env",
         "intext:”Private Key” filetype:key",
         "intext:”System Information” filetype:log",
-        "intitle:”Index of /” +backup"
+        "intitle:”Index of /” +backup",
+        'allintitle:"Network Camera NetworkCamera"',
+        'intitle:"EvoCam" inurl:"webcam.html"',
+        'intitle:"Live View / - AXIS"',  # maybe without spaces...
+        'inurl:indexFrame.shtml"Axis Video Server"',
+        'inurl:axis.cgi/jpg',
+        'inurl:"MultiCameraFrame?Mode=Motion"',
+        'inurl:/view.shtml',
+        'inurl:/view/index.shtml',
+        '"mywebcamXP server!"',
+        'allintitle:"Network Camera NetworkCamera"',
+        'intitle:"EvoCam" inurl:"webcam.html"',
+        'intitle:"Live View / - AXIS"',  # maybe without spaces...
+        'inurl:indexFrame.shtml"Axis Video Server"',
+        'inurl:axis.cgi/jpg',
+        'inurl:"MultiCameraFrame?Mode=Motion"',
+        'inurl:/view.shtml',
+        'inurl:/view/index.shtml',
+        '"mywebcamXP server!"',
+        'allintitle:"Network Camera NetworkCamera"',
+        'intitle:"EvoCam" inurl:"webcam.html"',
+        'intitle:"Live View / - AXIS"',  # maybe without spaces...
+        'inurl:indexFrame.shtml"Axis Video Server"',
+        'inurl:axis.cgi/jpg',
+        'inurl:"MultiCameraFrame?Mode=Motion"',
+        'inurl:/view.shtml',
+        'inurl:/view/index.shtml',
+        '"mywebcamXP server!"'
     ]),
     ("Webcams", [
         'allintitle:"Network Camera NetworkCamera"',
@@ -317,19 +348,19 @@ back_button.pack(pady=10)
 
 create_category_labels()
 
+# Run search button
+search_button = tk.Button(app, text="Run Search", command=run_search, font=("Helvetica", 16, "bold"))
+search_button.pack(side="bottom", padx=10, pady=(10, 0))
+
+# Update button
+update_button = tk.Button(app, text="Update", command=update_application, font=("Helvetica", 16, "bold"))
+update_button.pack(side="bottom", padx=10, pady=(0, 10))
+
 # Add tabs to the notebook
 notebook.add(servers_frame, text="Servers")
 notebook.add(filetypes_frame, text="Filetypes")
 notebook.add(site_domains_frame, text="Site Domains")
 notebook.add(advanced_frame, text="Advanced Dorking")
 notebook.pack(fill="both", expand=True)
-
-# Run search button
-search_button = tk.Button(app, text="Run Search", command=run_search, font=("Helvetica", 16, "bold"))
-search_button.pack(pady=10, side="left", padx=10)
-
-# Update button
-update_button = tk.Button(app, text="Update", command=update_application, font=("Helvetica", 16, "bold"))
-update_button.pack(pady=10, side="left", padx=10)
 
 app.mainloop()
