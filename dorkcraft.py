@@ -7,6 +7,32 @@ import os
 import sys
 
 filetype_radio_buttons = []  # List to hold the Radiobutton variables for filetypes
+recent_queries = [] # Add a global variant to store recent queries
+
+# File to store history
+history_file = "history.txt"
+
+def load_history():
+    if os.path.exists(history_file):
+        with open (history_file, "r") as f:
+            return [line.strip() for line in f.readlines()]
+    else:
+        return []
+    
+def save_history():
+    with open(history_file, "w") as f:
+        f.write("\n".join(recent_queries))
+        
+def remove_query(idx):
+    if 0 <= idx < len(recent_queries):
+        del recent_queries[idx]
+        update_history_tab()
+        save_history()
+        
+def add_to_history(query):
+    recent_queries.append(query)
+    update_history_tab()
+    save_history()
 
 def clear_filetype_selection():
     for var in filetype_radio_buttons:
@@ -56,6 +82,12 @@ def search_google_with_dork(query):
     webbrowser.register('firefox', None, webbrowser.BackgroundBrowser(firefox_path))
     webbrowser.get('firefox').open(search_url)
 
+# Function to display recent queries in the history rtab
+def display_recent_queries():
+    for query in recent_queries:
+        query_label = tk.Label(history_frame, text=query, font=("Helvetica", 12))
+        query_label.pack(anchor="w")
+
 def run_search():
     selected_parameters = []
     selected_filetype = get_selected_filetype()
@@ -71,6 +103,7 @@ def run_search():
     
     random_dork = generate_random_dork(selected_parameters)
     search_google_with_dork(random_dork)
+    add_to_history(random_dork)
     print("Google Dork Query:", random_dork)
 
 def update_application():
@@ -89,7 +122,8 @@ def update_application():
             script_response = requests.get(download_url)
             with open('updated_script.py', 'wb') as file:
                 file.write(script_response.content)
-
+            
+            recent_queries.clear()
             # Restart the application
             os.execl(sys.executable, sys.executable, *sys.argv)
 
@@ -348,6 +382,24 @@ def update_scrollregion(event):
 advanced_canvas.bind("<Configure>", update_scrollregion)
 advanced_scroll.config(command=advanced_canvas.yview)
 
+# History Tab
+history_frame = tk.Frame(notebook)
+history_frame.pack(fill="both", expand=True)
+
+history_text = tk.Text(history_frame, wrap="word", font=("Helvetica", 12))
+history_text.pack(fill="both", expand=True)
+
+def update_history_tab():
+    history_text.delete("1.0", tk.END) # Clear previous Content
+    for idx, query in enumerate(recent_queries, start=1):
+        history_text.insert(tk.END, f"{idx}. {query}\n")
+        remove_button = tk.Button(history_text, text="X", command=lambda idx=idx-1: remove_query(idx))
+        history_text.window_create(tk.END, window=remove_button)
+        history_text.insert(tk.END, "\n")
+        
+# Load History
+recent_queries = load_history()
+update_history_tab()
 
 # Run search button
 search_button = tk.Button(app, text="Run Search", command=run_search, font=("Helvetica", 16, "bold"))
@@ -369,11 +421,19 @@ clear_domains_button.pack(side="bottom", pady=20)
 clear_advanced_button = tk.Button(advanced_frame, text="Clear", command=clear_advanced_selection)
 clear_advanced_button.pack(side="bottom", pady=20)
 
+# Clear button for history tab
+clear_history_button = tk.Button(history_frame, text="Clear History", command=lambda: recent_queries.clear())
+clear_history_button.pack(side="bottom", pady=20)
+
+# Update history tab when it is selected
+notebook.bind("<<NotebookTabChanged>>", lambda event: update_history_tab())
+
 # Add tabs to the notebook
 notebook.add(servers_frame, text="Home")
 notebook.add(filetypes_frame, text="Filetypes")
 notebook.add(site_domains_frame, text="Site Domains")
 notebook.add(advanced_frame, text="Advanced Dorking")
+notebook.add(history_frame, text="History")
 notebook.pack(fill="both", expand=True)
 
 app.mainloop()
