@@ -76,7 +76,7 @@ def run_search():
 def update_application():
     try:
         # Fetch latest release information from GitHub API
-        api_url = 'https://api.github.com/repos/Dys0rti0n/autodork/releases/latest'
+        api_url = 'https://github.com/Dyst0rti0n/autodork/releases/latest'
         response = requests.get(api_url)
         release_info = response.json()
 
