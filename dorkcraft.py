@@ -76,7 +76,7 @@ def run_search():
 def update_application():
     try:
         # Fetch latest release information from GitHub API
-        api_url = 'https://github.com/Dyst0rti0n/autodork/releases/latest'
+        api_url = 'https://github.com/Dys0rti0n/autodork/releases/latest'
         response = requests.get(api_url)
         release_info = response.json()
 
@@ -113,7 +113,7 @@ creator_image = tk.PhotoImage(file=image_path)
 screen_width = app.winfo_screenwidth()
 
 # Set window width based on screen resolution
-app.geometry("800x500")
+app.geometry("800x600")
 
 # Option tabs for different categories
 notebook = ttk.Notebook(app)
@@ -258,7 +258,16 @@ advanced_categories = [
         "intext:”API Key” filetype:env",
         "intext:”Private Key” filetype:key",
         "intext:”System Information” filetype:log",
-        "intitle:”Index of /” +backup"
+        "intitle:”Index of /” +backup",
+        'allintitle:"Network Camera NetworkCamera"',
+        'intitle:"EvoCam" inurl:"webcam.html"',
+        'intitle:"Live View / - AXIS"',  # maybe without spaces...
+        'inurl:indexFrame.shtml"Axis Video Server"',
+        'inurl:axis.cgi/jpg',
+        'inurl:"MultiCameraFrame?Mode=Motion"',
+        'inurl:/view.shtml',
+        'inurl:/view/index.shtml',
+        '"mywebcamXP server!"'
     ]),
     ("Webcams", [
         'allintitle:"Network Camera NetworkCamera"',
@@ -350,18 +359,18 @@ update_button.pack(side="bottom", padx=10, pady=(0, 10))
 
 # Clear button for Filetypes tab
 clear_filetypes_button = tk.Button(filetypes_frame, text="Clear", command=clear_filetype_selection)
-clear_filetypes_button.pack(side="bottom", pady=10)
+clear_filetypes_button.pack(side="bottom", pady=20)
 
 # Clear button for site domains
 clear_domains_button = tk.Button(site_domains_frame, text="Clear", command=clear_site_domain_selection)
-clear_domains_button.pack(side="bottom", pady=10)
+clear_domains_button.pack(side="bottom", pady=20)
 
 # Clear button for advanced tab
 clear_advanced_button = tk.Button(advanced_frame, text="Clear", command=clear_advanced_selection)
-clear_advanced_button.pack(side="bottom", pady=10)
+clear_advanced_button.pack(side="bottom", pady=20)
 
 # Add tabs to the notebook
-notebook.add(servers_frame, text="Servers")
+notebook.add(servers_frame, text="Home")
 notebook.add(filetypes_frame, text="Filetypes")
 notebook.add(site_domains_frame, text="Site Domains")
 notebook.add(advanced_frame, text="Advanced Dorking")
