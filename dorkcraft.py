@@ -4,8 +4,21 @@ import webbrowser
 import random
 import requests
 import os
+import sys
 
 filetype_radio_buttons = []  # List to hold the Radiobutton variables for filetypes
+
+def clear_filetype_selection():
+    for var in filetype_radio_buttons:
+        var.set("") # Clears the selected filetype
+
+def clear_site_domain_selection():
+    for var in domain_vars:
+        var.set(False) # Clears the selected site domains
+        
+def clear_advanced_selection():
+    for var, _ in advanced_vars:
+        var.set(False) # Clears the selected advanced tab options
 
 def generate_random_dork(parameters):
     dork_query = ''
@@ -60,7 +73,6 @@ def run_search():
     search_google_with_dork(random_dork)
     print("Google Dork Query:", random_dork)
 
-# Function to update the application
 def update_application():
     try:
         # Fetch latest release information from GitHub API
@@ -78,26 +90,19 @@ def update_application():
             with open('updated_script.py', 'wb') as file:
                 file.write(script_response.content)
 
-            # Replace existing script file with the updated one
-            os.replace('updated_script.py', 'your_script.py')
+            # Restart the application
+            os.execl(sys.executable, sys.executable, *sys.argv)
 
-            # Optional: Restart the application
-            # app.quit()
-            # os.execv(sys.executable, ['python'] + sys.argv)
-            # or provide a message to restart manually
-            
-            messagebox.showinfo("Update", "Application updated successfully. Please restart the application.")
         else:
             messagebox.showinfo("No Assets", "No assets found for the latest release.")
     except Exception as e:
         messagebox.showerror("Update Error", f"Failed to update application: {str(e)}")
 
-
 # Create GUI
 app = tk.Tk()
 app.title("Google Dorking Crafter")
 
-# Get the directory of the script
+# Get the Directoy of the script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the path to the image
 image_path = os.path.join(script_dir, 'dystortion.png')
@@ -108,7 +113,7 @@ creator_image = tk.PhotoImage(file=image_path)
 screen_width = app.winfo_screenwidth()
 
 # Set window width based on screen resolution
-app.geometry("1000x500")
+app.geometry("800x500")
 
 # Option tabs for different categories
 notebook = ttk.Notebook(app)
@@ -178,6 +183,12 @@ for category, types in file_types.items():
         radio_button.pack(anchor="w")
         filetype_radio_buttons.append(var)
 
+# Update the scroll region when the size of the inner frame changes
+def on_frame_configure(event):
+    filetypes_canvas.configure(scrollregion=filetypes_canvas.bbox("all"))
+
+filetypes_inner_frame.bind("<Configure>", on_frame_configure)
+
 # Site Domains tab
 site_domains_frame = tk.Frame(notebook)
 site_domains_frame.pack(fill="both", expand=True)
@@ -188,9 +199,9 @@ site_domains_label.pack(pady=5)
 # Define domain categories and their respective domains
 domain_categories = {
     "General Domains": ['.com', '.org', '.net', '.info', '.biz', '.io', '.domains'],
-    "Country Code Domains": ['.us', '.uk', '.de', '.fr', '.jp', '.cn', '.ru', '.au'],
-    "Educational Domains": ['.edu', '.ac', '.sch'],
-    "Governmental Domains": ['.gov', '.mil'],
+    "CC Domains": ['.us', '.uk', '.de', '.fr', '.jp', '.cn', '.ru', '.au'],
+    "Edu Domains": ['.edu', '.ac', '.sch'],
+    "Gov Domains": ['.gov', '.mil'],
 }
 
 domain_vars = []
@@ -247,25 +258,9 @@ advanced_categories = [
         "intext:”API Key” filetype:env",
         "intext:”Private Key” filetype:key",
         "intext:”System Information” filetype:log",
-        "intitle:”Index of /” +backup",
-        'allintitle:"Network Camera NetworkCamera"',
-        'intitle:"EvoCam" inurl:"webcam.html"',
-        'intitle:"Live View / - AXIS"',  # maybe without spaces...
-        'inurl:indexFrame.shtml"Axis Video Server"',
-        'inurl:axis.cgi/jpg',
-        'inurl:"MultiCameraFrame?Mode=Motion"',
-        'inurl:/view.shtml',
-        'inurl:/view/index.shtml',
-        '"mywebcamXP server!"',
-        'allintitle:"Network Camera NetworkCamera"',
-        'intitle:"EvoCam" inurl:"webcam.html"',
-        'intitle:"Live View / - AXIS"',  # maybe without spaces...
-        'inurl:indexFrame.shtml"Axis Video Server"',
-        'inurl:axis.cgi/jpg',
-        'inurl:"MultiCameraFrame?Mode=Motion"',
-        'inurl:/view.shtml',
-        'inurl:/view/index.shtml',
-        '"mywebcamXP server!"',
+        "intitle:”Index of /” +backup"
+    ]),
+    ("Webcams", [
         'allintitle:"Network Camera NetworkCamera"',
         'intitle:"EvoCam" inurl:"webcam.html"',
         'intitle:"Live View / - AXIS"',  # maybe without spaces...
@@ -276,10 +271,10 @@ advanced_categories = [
         'inurl:/view/index.shtml',
         '"mywebcamXP server!"'
     ]),
-    ("Webcams", [
+    ("Vulnerable web cams", [
         'allintitle:"Network Camera NetworkCamera"',
         'intitle:"EvoCam" inurl:"webcam.html"',
-        'intitle:"Live View / - AXIS"',  # maybe without spaces...
+        'intitle:"Live View / - AXIS"',
         'inurl:indexFrame.shtml"Axis Video Server"',
         'inurl:axis.cgi/jpg',
         'inurl:"MultiCameraFrame?Mode=Motion"',
@@ -300,17 +295,6 @@ advanced_categories = [
         'inurl:index.php?id=',
         'intitle:"site administration:please log in"',
         'intitle:"curriculum vitae" filetype:doc'
-    ]),
-    ("Vulnerable web cams", [
-        'allintitle:"Network Camera NetworkCamera"',
-        'intitle:"EvoCam" inurl:"webcam.html"',
-        'intitle:"Live View / - AXIS"',
-        'inurl:indexFrame.shtml"Axis Video Server"',
-        'inurl:axis.cgi/jpg',
-        'inurl:"MultiCameraFrame?Mode=Motion"',
-        'inurl:/view.shtml',
-        'inurl:/view/index.shtml',
-        '"mywebcamXP server!"'
     ]),
     ("Sensitive Wordpress Uploads", [
         '_intitle:”index of/” “cfdb7_uploads”_',
@@ -343,10 +327,18 @@ def back_to_categories():
     create_category_labels()
 
 # Back button for the Advanced Dorking tab
-back_button = tk.Button(advanced_frame, text="Back to Categories", command=back_to_categories, font=("Helvetica", 12))
+back_button = tk.Button(advanced_frame, text="Back to Headings", command=back_to_categories, font=("Helvetica", 12))
 back_button.pack(pady=10)
 
 create_category_labels()
+
+# Configure scrollbar to update based on the actual size of the inner frame
+def update_scrollregion(event):
+    advanced_canvas.configure(scrollregion=advanced_canvas.bbox("all"))
+
+advanced_canvas.bind("<Configure>", update_scrollregion)
+advanced_scroll.config(command=advanced_canvas.yview)
+
 
 # Run search button
 search_button = tk.Button(app, text="Run Search", command=run_search, font=("Helvetica", 16, "bold"))
@@ -355,6 +347,18 @@ search_button.pack(side="bottom", padx=10, pady=(10, 0))
 # Update button
 update_button = tk.Button(app, text="Update", command=update_application, font=("Helvetica", 16, "bold"))
 update_button.pack(side="bottom", padx=10, pady=(0, 10))
+
+# Clear button for Filetypes tab
+clear_filetypes_button = tk.Button(filetypes_frame, text="Clear", command=clear_filetype_selection)
+clear_filetypes_button.pack(side="bottom", pady=10)
+
+# Clear button for site domains
+clear_domains_button = tk.Button(site_domains_frame, text="Clear", command=clear_site_domain_selection)
+clear_domains_button.pack(side="bottom", pady=10)
+
+# Clear button for advanced tab
+clear_advanced_button = tk.Button(advanced_frame, text="Clear", command=clear_advanced_selection)
+clear_advanced_button.pack(side="bottom", pady=10)
 
 # Add tabs to the notebook
 notebook.add(servers_frame, text="Servers")
