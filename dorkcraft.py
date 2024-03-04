@@ -157,7 +157,7 @@ servers_frame = tk.Frame(notebook)
 servers_frame.pack(fill="both", expand=True)
 
 # About Me - The Creator section
-creator_info_label = tk.Label(servers_frame, text="About Me - The Creator\nDystortion is a Google Dorking nerd, so this tool was creted to make it much more accessible to anyone.", font=("Helvetica", 12))
+creator_info_label = tk.Label(servers_frame, text="About Me - The Creator\nDystortion is a Google Dorking nerd. Autodork automates the Google Dorking experience.", font=("Helvetica", 12))
 creator_info_label.pack(pady=10)
 
 # Create a label to display the image
