@@ -113,7 +113,7 @@ def run_search():
     print("Google Dork Query:", random_dork)
     
     # After performing the Google search and extracting the domains
-    output_folder = r'C:\Users\jamie\Downloads'  # Specify the full path to your desired folder
+    output_folder = r'C:\Users\Dystortion\Downloads'  # Specify the full path to your desired folder
     output_file = os.path.join(output_folder, 'collected-domains.txt')
     
     if not os.path.exists(output_file):
