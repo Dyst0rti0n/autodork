@@ -78,7 +78,7 @@ def filter_domains(domains):
     return list(set(domains))
 
 # Define the output folder
-output_folder = r'C:\Users\jamie\Downloads'  # Specify the full path to your desired folder
+output_folder = r'C:\Users\user\Downloads'  # Specify the full path to your desired folder
 
 # Wait for the file to be created
 if wait_for_file(os.path.join(output_folder, 'collected-domains.txt')):
